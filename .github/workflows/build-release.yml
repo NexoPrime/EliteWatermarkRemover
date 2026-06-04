@@ -1,0 +1,58 @@
+name: Build Executables (Windows, Mac, Linux)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-glx libglib2.0-0 libxkbcommon-x11-0 libdbus-1-3
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Build Standalone Executable with PyInstaller
+        run: pyinstaller --name "EliteWatermarkRemover" --windowed --onefile --icon="assets/app_icon.ico" --add-data="assets:assets" --clean run.py
+
+      - name: Upload Windows Executable
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: EliteWatermarkRemover-Windows
+          path: dist/EliteWatermarkRemover.exe
+
+      - name: Upload macOS App
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: EliteWatermarkRemover-macOS
+          path: dist/EliteWatermarkRemover.app
+
+      - name: Upload Linux Executable
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: EliteWatermarkRemover-Linux
+          path: dist/EliteWatermarkRemover

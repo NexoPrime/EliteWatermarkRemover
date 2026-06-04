@@ -1,0 +1,7 @@
+# Core dependencies
+PyQt5==5.15.11
+opencv-python-headless==4.13.0.92
+numpy==2.4.4
+
+# Dev dependencies are managed via pyproject.toml [project.optional-dependencies.dev]
+# Install with: pip install -e ".[dev]"

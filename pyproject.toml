@@ -1,0 +1,91 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elite-watermark-remover"
+version = "2.0.0"
+description = "Professional-grade watermark removal tool with multiple inpainting algorithms and batch processing."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Elite Watermark Remover Contributors"},
+]
+keywords = ["watermark", "inpainting", "image-processing", "opencv", "pyqt5"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+    "PyQt5>=5.15",
+    "opencv-contrib-python-headless>=4.8",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-qt>=4.2",
+    "pytest-cov>=4.0",
+    "flake8>=6.0",
+    "mypy>=1.0",
+    "black>=23.0",
+    "isort>=5.12",
+    "pre-commit>=3.0",
+    "build>=0.10",
+    "pyinstaller>=6.0",
+]
+
+[project.scripts]
+watermark-remover = "src.main:main"
+
+[project.urls]
+Homepage = "https://github.com/elite-watermark-remover/watermark-remover"
+Repository = "https://github.com/elite-watermark-remover/watermark-remover"
+Issues = "https://github.com/elite-watermark-remover/watermark-remover/issues"
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+known_first_party = ["src"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "src.ui.components.image_viewer",
+    "src.ui.main_window",
+    "src.utils.image_utils",
+    "src.core.inpainter",
+    "src.config"
+]
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+qt_api = "pyqt5"
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203", "W503"]
+exclude = ["venv", ".git", "__pycache__", "build", "dist"]

@@ -242,6 +242,13 @@ class ImageEditorView(QGraphicsView):
         self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
         logger.debug("Image set: %dx%d", w, h)
 
+    def update_image(self, cv_img: np.ndarray) -> None:
+        """Update the displayed image without clearing the scene or mask history."""
+        self.cv_img = cv_img.copy()
+        if self.pixmap_item is not None:
+            self.pixmap_item.setPixmap(cv_to_qpixmap(self.cv_img))
+        self.update_mask_overlay()
+
     def get_mask(self) -> Optional[np.ndarray]:
         """Return the current mask array.
 

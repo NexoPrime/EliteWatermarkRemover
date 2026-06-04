@@ -916,7 +916,7 @@ class EliteWatermarkRemover(QMainWindow):
             result: The inpainted image.
         """
         self.current_image = result
-        self.viewer.set_image(self.current_image)
+        self.viewer.update_image(self.current_image)
         self._set_status("Elite removal complete.")
         logger.info("Single inpainting completed successfully.")
 
@@ -940,7 +940,7 @@ class EliteWatermarkRemover(QMainWindow):
             return
 
         self.current_image = self.undo_stack.pop()
-        self.viewer.set_image(self.current_image)
+        self.viewer.update_image(self.current_image)
         self._set_status("Undo successful.")
 
     # ══════════════════════════════════════════════════════════

@@ -48,6 +48,7 @@ class ToolMode(Enum):
     SMART_OBJECT = 4
     SMART_LASSO = 5
     HEAL = 6
+    CLONE_STAMP = 7
 
 
 class ImageEditorView(QGraphicsView):
@@ -72,6 +73,7 @@ class ImageEditorView(QGraphicsView):
     undo_available = pyqtSignal(bool)
     redo_available = pyqtSignal(bool)
     heal_requested = pyqtSignal(np.ndarray)
+    clone_requested = pyqtSignal(np.ndarray, int, int)
 
     def __init__(self, parent: Optional[object] = None) -> None:
         """Initialize the image editor view.
@@ -98,6 +100,7 @@ class ImageEditorView(QGraphicsView):
         self.lasso_path_item = None
         self._lasso_points: list[QPointF] = []
         self._heal_mask: Optional[np.ndarray] = None
+        self.clone_source: Optional[QPointF] = None
 
         # Tool state
         self.current_tool: ToolMode = ToolMode.RECTANGLE
@@ -409,11 +412,24 @@ class ImageEditorView(QGraphicsView):
 
         # Draw: left-click
         if event.button() == Qt.LeftButton:
-            self._is_drawing = True
             pos = self.mapToScene(event.pos())
+
+            if (
+                self.current_tool == ToolMode.CLONE_STAMP
+                and event.modifiers() == Qt.AltModifier
+            ):
+                self.clone_source = pos
+                event.accept()
+                return
+
+            self._is_drawing = True
             self._draw_start_pos = pos
 
-            if self.current_tool in (ToolMode.BRUSH, ToolMode.HEAL):
+            if self.current_tool in (
+                ToolMode.BRUSH,
+                ToolMode.HEAL,
+                ToolMode.CLONE_STAMP,
+            ):
                 self._draw_brush(pos)
             elif self.current_tool == ToolMode.MAGIC_WAND:
                 self._apply_magic_wand(pos)
@@ -451,7 +467,11 @@ class ImageEditorView(QGraphicsView):
 
         if self._is_drawing:
             pos = self.mapToScene(event.pos())
-            if self.current_tool in (ToolMode.BRUSH, ToolMode.HEAL):
+            if self.current_tool in (
+                ToolMode.BRUSH,
+                ToolMode.HEAL,
+                ToolMode.CLONE_STAMP,
+            ):
                 self._draw_brush(pos)
             elif self.current_tool in (ToolMode.RECTANGLE, ToolMode.SMART_OBJECT):
                 scene_rect = self.sceneRect()
@@ -501,6 +521,19 @@ class ImageEditorView(QGraphicsView):
                     heal_copy = self._heal_mask.copy()
                     self._heal_mask.fill(0)
                     self.heal_requested.emit(heal_copy)
+            elif self.current_tool == ToolMode.CLONE_STAMP:
+                if (
+                    self.clone_source is not None
+                    and self._heal_mask is not None
+                    and cv2.countNonZero(self._heal_mask) > 0
+                ):
+                    dx = int(self._draw_start_pos.x() - self.clone_source.x())
+                    dy = int(self._draw_start_pos.y() - self.clone_source.y())
+                    clone_copy = self._heal_mask.copy()
+                    self._heal_mask.fill(0)
+                    self.clone_requested.emit(clone_copy, dx, dy)
+                elif self.clone_source is None and self._heal_mask is not None:
+                    self._heal_mask.fill(0)
             elif self.current_tool == ToolMode.BRUSH:
                 # Record final brush state to history
                 self._add_mask_to_history(self.mask)
@@ -529,7 +562,10 @@ class ImageEditorView(QGraphicsView):
         x = max(0, min(int(pos.x()), w - 1))
         y = max(0, min(int(pos.y()), h - 1))
 
-        if self.current_tool == ToolMode.HEAL and self._heal_mask is not None:
+        if (
+            self.current_tool in (ToolMode.HEAL, ToolMode.CLONE_STAMP)
+            and self._heal_mask is not None
+        ):
             cv2.circle(self._heal_mask, (x, y), self.brush_size, 255, -1)
         else:
             cv2.circle(self.mask, (x, y), self.brush_size, 255, -1)

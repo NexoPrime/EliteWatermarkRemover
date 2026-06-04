@@ -8,8 +8,10 @@ matching for dynamic watermark location.
 from __future__ import annotations
 
 import logging
+import multiprocessing
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
 
 import cv2
@@ -88,31 +90,21 @@ class BatchWorker(QThread):
             use_tm,
         )
 
-        for i, fname in enumerate(self.files):
+        def _process_file(i: int, fname: str) -> None:
             if self._cancel_event.is_set():
-                msg = f"Batch cancelled by user after {i}/{total} images."
-                logger.info(msg)
-                self.finished.emit(False, msg)
                 return
 
-            # Sanitize filename to prevent path traversal
             safe_name = os.path.basename(fname)
             if safe_name != fname or ".." in fname:
                 logger.warning("Skipping suspicious filename: %s", fname)
-                continue
+                return
 
             src_path = os.path.join(self.folder, safe_name)
             dst_path = os.path.join(self.out_dir, safe_name)
 
             try:
                 self._process_single(
-                    src_path,
-                    dst_path,
-                    ref_mask,
-                    ref_h,
-                    ref_w,
-                    template,
-                    use_tm,
+                    src_path, dst_path, ref_mask, ref_h, ref_w, template, use_tm
                 )
             except Exception as e:
                 error_msg = f"Error on {safe_name}: {e}"
@@ -127,6 +119,23 @@ class BatchWorker(QThread):
                 percentage=int(((i + 1) / total) * 100),
             )
             self.progress_update.emit(progress.percentage, progress.message)
+
+        max_workers = max(1, multiprocessing.cpu_count() - 1)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [
+                executor.submit(_process_file, i, fname)
+                for i, fname in enumerate(self.files)
+            ]
+            for _ in as_completed(futures):
+                if self._cancel_event.is_set():
+                    executor.shutdown(wait=False, cancel_futures=True)
+                    break
+
+        if self._cancel_event.is_set():
+            msg = f"Batch cancelled by user."
+            logger.info(msg)
+            self.finished.emit(False, msg)
+            return
 
         if errors:
             msg = (

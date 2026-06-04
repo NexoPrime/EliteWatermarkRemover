@@ -216,6 +216,7 @@ class EliteWatermarkRemover(QMainWindow):
         self.viewer.undo_available.connect(self.btn_mask_undo.setEnabled)
         self.viewer.redo_available.connect(self.btn_mask_redo.setEnabled)
         self.viewer.heal_requested.connect(self._on_heal_requested)
+        self.viewer.clone_requested.connect(self._on_clone_requested)
         self.btn_mask_undo.clicked.connect(self.viewer.undo_mask_edit)
         self.btn_mask_redo.clicked.connect(self.viewer.redo_mask_edit)
         self.btn_smooth_mask.clicked.connect(lambda: self.viewer.smooth_mask())
@@ -311,6 +312,15 @@ class EliteWatermarkRemover(QMainWindow):
         self.btn_heal.clicked.connect(lambda: self._select_tool(ToolMode.HEAL))
         self.btn_heal.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
+        self.btn_clone = QToolButton()
+        self.btn_clone.setText("Clone Stamp")
+        self.btn_clone.setToolTip(
+            "Alt-Click to set source, then brush to perfectly copy texture to new location."
+        )
+        self.btn_clone.setCheckable(True)
+        self.btn_clone.clicked.connect(lambda: self._select_tool(ToolMode.CLONE_STAMP))
+        self.btn_clone.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
         self.btn_rect = QToolButton()
         self.btn_rect.setText("Rectangle")
         self.btn_rect.setCheckable(True)
@@ -334,15 +344,18 @@ class EliteWatermarkRemover(QMainWindow):
         tool_grid.addWidget(self.btn_smart_obj, 0, 1)
         # Row 1
         tool_grid.addWidget(self.btn_heal, 1, 0)
-        tool_grid.addWidget(self.btn_brush, 1, 1)
+        tool_grid.addWidget(self.btn_clone, 1, 1)
         # Row 2
-        tool_grid.addWidget(self.btn_wand, 2, 0)
+        tool_grid.addWidget(self.btn_brush, 2, 0)
         tool_grid.addWidget(self.btn_rect, 2, 1)
+        # Row 3
+        tool_grid.addWidget(self.btn_wand, 3, 0)
 
         self.tool_buttons = [
             self.btn_smart_obj,
             self.btn_smart_lasso,
             self.btn_heal,
+            self.btn_clone,
             self.btn_rect,
             self.btn_brush,
             self.btn_wand,
@@ -642,6 +655,8 @@ class EliteWatermarkRemover(QMainWindow):
             self.btn_brush.setChecked(True)
         elif tool == ToolMode.MAGIC_WAND:
             self.btn_wand.setChecked(True)
+        elif tool == ToolMode.CLONE_STAMP:
+            self.btn_clone.setChecked(True)
 
         param = self.spin_tool_param.value()
         self.viewer.set_tool(tool, size=param, tolerance=param)
@@ -895,6 +910,43 @@ class EliteWatermarkRemover(QMainWindow):
         self._inpaint_worker.result_ready.connect(self._on_inpaint_done)
         self._inpaint_worker.error_occurred.connect(self._on_inpaint_error)
         self._inpaint_worker.start()
+
+    @pyqtSlot(np.ndarray, int, int)
+    def _on_clone_requested(self, mask: np.ndarray, dx: int, dy: int) -> None:
+        """Handle instant clone stamp request.
+
+        Copies texture from (x-dx, y-dy) to (x, y).
+        """
+        if self.current_image is None:
+            return
+
+        self.undo_stack.append(self.current_image.copy())
+
+        h, w = self.current_image.shape[:2]
+
+        # Matrix to shift mask to source position
+        M_to_src = np.float32([[1, 0, -dx], [0, 1, -dy]])
+        src_mask = cv2.warpAffine(mask, M_to_src, (w, h))
+
+        # Extract pixels from source
+        src_pixels = np.zeros_like(self.current_image)
+        src_pixels[src_mask > 0] = self.current_image[src_mask > 0]
+
+        # Matrix to shift pixels to target position
+        M_to_dst = np.float32([[1, 0, dx], [0, 1, dy]])
+        dst_pixels = cv2.warpAffine(src_pixels, M_to_dst, (w, h))
+
+        # Soften mask for seamless blending
+        blur_mask = cv2.GaussianBlur(mask, (7, 7), 0).astype(float) / 255.0
+        if len(self.current_image.shape) == 3:
+            blur_mask = np.expand_dims(blur_mask, axis=2)
+
+        # Composite
+        self.current_image = (
+            dst_pixels * blur_mask + self.current_image * (1 - blur_mask)
+        ).astype(np.uint8)
+        self.viewer.update_image(self.current_image)
+        self._set_status("Clone stamp applied.")
 
     def _show_original(self) -> None:
         if self.ref_image is not None:

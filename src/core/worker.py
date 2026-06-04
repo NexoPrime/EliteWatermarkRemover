@@ -120,7 +120,8 @@ class BatchWorker(QThread):
             )
             self.progress_update.emit(progress.percentage, progress.message)
 
-        max_workers = max(1, multiprocessing.cpu_count() - 1)
+        # Limit to half the CPU cores to prevent total OS lockup during heavy AI batching
+        max_workers = max(1, multiprocessing.cpu_count() // 2)
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [
                 executor.submit(_process_file, i, fname)

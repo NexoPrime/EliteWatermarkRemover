@@ -160,6 +160,23 @@ class EliteWatermarkRemover(QMainWindow):
 
         logger.info("Application window initialized.")
 
+    def closeEvent(self, event: typing.Any) -> None:
+        """Handle application close to prevent accidental data loss."""
+        if self.undo_stack:
+            reply = QMessageBox.question(
+                self,
+                "Unsaved Changes",
+                "You have unsaved edits. Are you sure you want to quit?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply == QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+                return
+        event.accept()
+
     # ══════════════════════════════════════════════════════════
     #  UI Construction
     # ══════════════════════════════════════════════════════════

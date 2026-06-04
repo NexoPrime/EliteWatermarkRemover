@@ -723,7 +723,7 @@ class EliteWatermarkRemover(QMainWindow):
             return
 
         start_dir = self.config.last_save_dir or ""
-        file_path, _ = QFileDialog.getSaveFileName(
+        file_path, selected_filter = QFileDialog.getSaveFileName(
             self,
             "Save Result",
             start_dir,
@@ -732,6 +732,12 @@ class EliteWatermarkRemover(QMainWindow):
         )
         if not file_path:
             return
+
+        if not Path(file_path).suffix:
+            if ".jpg" in selected_filter.lower() or ".jpeg" in selected_filter.lower():
+                file_path += ".jpg"
+            else:
+                file_path += ".png"
 
         self.config.last_save_dir = str(Path(file_path).parent)
         success = cv2.imwrite(file_path, self.current_image)
@@ -808,7 +814,7 @@ class EliteWatermarkRemover(QMainWindow):
             QMessageBox.warning(self, "Notice", "No mask to save.")
             return
 
-        file_path, _ = QFileDialog.getSaveFileName(
+        file_path, selected_filter = QFileDialog.getSaveFileName(
             self,
             "Save Mask",
             "",
@@ -817,6 +823,12 @@ class EliteWatermarkRemover(QMainWindow):
         )
         if not file_path:
             return
+
+        if not Path(file_path).suffix:
+            if ".npy" in selected_filter.lower():
+                file_path += ".npy"
+            else:
+                file_path += ".png"
 
         if file_path.lower().endswith(".npy"):
             try:

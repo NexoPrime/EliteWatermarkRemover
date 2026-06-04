@@ -7,8 +7,9 @@ and launches the main window.
 from __future__ import annotations
 
 import logging
-import sys
 import os
+import sys
+
 
 def get_resource_path(relative_path: str) -> str:
     """Get absolute path to resource, works for dev and for PyInstaller"""
@@ -17,6 +18,7 @@ def get_resource_path(relative_path: str) -> str:
     except Exception:
         base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     return os.path.join(base_path, relative_path)
+
 
 from PyQt5.QtWidgets import QApplication
 
@@ -61,6 +63,7 @@ def main() -> int:
 
         # Set Professional Window Icon
         from PyQt5.QtGui import QIcon
+
         icon_path = get_resource_path(os.path.join("assets", "app_icon.png"))
         if os.path.exists(icon_path):
             app.setWindowIcon(QIcon(icon_path))

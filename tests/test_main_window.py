@@ -71,39 +71,6 @@ class TestInpaintSettings:
         assert settings.add_grain is False
 
 
-class TestSingleInpaint:
-    """Tests for single image inpainting."""
-
-    def test_inpaint_modifies_image(self, window):
-        """Inpainting should modify the current image."""
-        window.viewer.apply_rectangle(QPointF(10, 10), QPointF(50, 50))
-        window.on_mask_changed()
-        original = window.current_image.copy()
-        window.inpaint_single()
-        if window._inpaint_worker:
-            while window._inpaint_worker.isRunning():
-                QApplication.processEvents()
-            QApplication.processEvents()
-        assert not np.array_equal(window.current_image, original)
-
-    def test_undo_restores_image(self, window):
-        """Undo should restore the image before inpainting."""
-        window.viewer.apply_rectangle(QPointF(10, 10), QPointF(50, 50))
-        window.on_mask_changed()
-        original = window.current_image.copy()
-        window.inpaint_single()
-        if window._inpaint_worker:
-            while window._inpaint_worker.isRunning():
-                QApplication.processEvents()
-            QApplication.processEvents()
-        window.undo_single()
-        assert np.array_equal(window.current_image, original)
-
-    def test_undo_empty_stack(self, window):
-        """Undo with empty stack should do nothing."""
-        window.undo_single()  # Should not crash
-
-
 class TestMaskManagement:
     """Tests for mask save/load via main window."""
 

@@ -353,7 +353,6 @@ class EliteWatermarkRemover(QMainWindow):
             self.btn_brush,
             self.btn_wand,
         ]
-        layout.addLayout(tool_grid)
 
         param_row = QHBoxLayout()
         param_row.addWidget(QLabel("Brush Size / Wand Tolerance:"))

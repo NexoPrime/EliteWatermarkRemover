@@ -43,6 +43,7 @@ dev = [
     "pre-commit>=3.0",
     "build>=0.10",
     "pyinstaller>=6.0",
+    "pillow>=10.0",
 ]
 
 [project.scripts]

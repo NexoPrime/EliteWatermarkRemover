@@ -14,7 +14,7 @@ import sys
 def get_resource_path(relative_path: str) -> str:
     """Get absolute path to resource, works for dev and for PyInstaller"""
     try:
-        base_path = sys._MEIPASS
+        base_path = sys._MEIPASS  # type: ignore
     except Exception:
         base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     return os.path.join(base_path, relative_path)
@@ -53,8 +53,8 @@ def main() -> int:
             f"Initialized OpenCV hardware acceleration with {cpu_count} threads."
         )
 
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)  # type: ignore
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)  # type: ignore
 
         app = QApplication(sys.argv)
         app.setApplicationName(APP_NAME)

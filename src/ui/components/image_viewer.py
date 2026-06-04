@@ -733,6 +733,46 @@ class ImageEditorView(QGraphicsView):
         self.update_mask_overlay()
         self.mask_changed.emit()
 
+    def auto_detect_text(self) -> None:
+        """Automatically detect high-contrast text and logos using morphological operations."""
+        if self.cv_img is None or self.mask is None:
+            return
+
+        # Convert to grayscale
+        gray = cv2.cvtColor(self.cv_img, cv2.COLOR_BGR2GRAY)
+
+        # Apply morphological gradient to highlight edges and text boundaries
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        grad = cv2.morphologyEx(gray, cv2.MORPH_GRADIENT, kernel)
+
+        # Binarize using Otsu's thresholding
+        _, bw = cv2.threshold(grad, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+        # Connect horizontally oriented regions (text lines)
+        connected = cv2.morphologyEx(
+            bw, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (9, 1))
+        )
+
+        # Find contours
+        contours, _ = cv2.findContours(
+            connected.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+
+        h, w = self.cv_img.shape[:2]
+        img_area = h * w
+
+        for contour in contours:
+            x, y, cw, ch = cv2.boundingRect(contour)
+            area = cw * ch
+
+            # Filter contours based on size and aspect ratio typical for text
+            if area > 15 and area < (img_area * 0.2):
+                cv2.rectangle(self.mask, (x, y), (x + cw, y + ch), 255, -1)
+
+        self._add_mask_to_history(self.mask)
+        self.update_mask_overlay()
+        self.mask_changed.emit()
+
     # ── Public aliases for backward compatibility with tests ──
 
     def draw_brush(self, pos: QPointF) -> None:

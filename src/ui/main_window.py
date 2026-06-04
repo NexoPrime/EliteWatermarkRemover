@@ -300,6 +300,14 @@ class EliteWatermarkRemover(QMainWindow):
         )
         self.btn_smart_lasso.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
+        self.btn_auto_text = QToolButton()
+        self.btn_auto_text.setText("Auto-Detect Text / Logo")
+        self.btn_auto_text.setToolTip(
+            "Automatically masks sharp, high-contrast text and logos."
+        )
+        self.btn_auto_text.clicked.connect(self.viewer.auto_detect_text)
+        self.btn_auto_text.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
         self.btn_heal = QToolButton()
         self.btn_heal.setText("Heal Brush")
         self.btn_heal.setToolTip(
@@ -338,6 +346,7 @@ class EliteWatermarkRemover(QMainWindow):
 
         layout.addWidget(self.btn_smart_lasso)
         layout.addWidget(self.btn_smart_obj)
+        layout.addWidget(self.btn_auto_text)
         layout.addWidget(self.btn_heal)
         layout.addWidget(self.btn_clone)
         layout.addWidget(self.btn_brush)

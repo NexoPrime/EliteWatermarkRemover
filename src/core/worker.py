@@ -133,7 +133,7 @@ class BatchWorker(QThread):
                     break
 
         if self._cancel_event.is_set():
-            msg = f"Batch cancelled by user."
+            msg = "Batch cancelled by user."
             logger.info(msg)
             self.finished.emit(False, msg)
             return

@@ -175,6 +175,9 @@ class EliteWatermarkRemover(QMainWindow):
         self.splitter = QSplitter(Qt.Horizontal)
         main_layout.addWidget(self.splitter)
 
+        # Initialize Viewer first so panels can bind to it
+        self.viewer = ImageEditorView()
+
         # Left panel
         left_panel = QWidget()
         left_panel.setMinimumWidth(LEFT_PANEL_MIN_WIDTH)
@@ -210,8 +213,7 @@ class EliteWatermarkRemover(QMainWindow):
         batch_layout.addStretch()
         self.tabs.addTab(tab_batch, "Batch")
 
-        # Viewer
-        self.viewer = ImageEditorView()
+        # Connect Viewer Signals
         self.viewer.mask_changed.connect(self._on_mask_changed)
         self.viewer.undo_available.connect(self.btn_mask_undo.setEnabled)
         self.viewer.redo_available.connect(self.btn_mask_redo.setEnabled)

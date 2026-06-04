@@ -55,6 +55,8 @@ class TestBatchWorker:
         with qtbot.waitSignal(worker.finished, timeout=10000):
             worker.start()
 
+        worker.wait()
+
         assert len(results) == 1
         assert results[0][0] is True  # success
         for f in files:
@@ -89,6 +91,8 @@ class TestBatchWorker:
         with qtbot.waitSignal(worker.finished, timeout=10000):
             worker.start()
             worker.cancel()
+
+        worker.wait()
 
         assert worker.is_cancelled
 
@@ -128,6 +132,8 @@ class TestBatchWorker:
         with qtbot.waitSignal(worker.finished, timeout=10000):
             worker.start()
 
+        worker.wait()
+
     def test_corrupt_image_reported(self, qtbot, tmp_dir):
         """Corrupt image should trigger error signal, not crash."""
         src_dir = tmp_dir / "input"
@@ -161,6 +167,8 @@ class TestBatchWorker:
 
         with qtbot.waitSignal(worker.finished, timeout=10000):
             worker.start()
+
+        worker.wait()
 
         assert len(errors) == 1
         assert errors[0][0] == "corrupt.png"

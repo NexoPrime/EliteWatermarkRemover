@@ -79,6 +79,8 @@ class TestSingleInpaint:
         window.on_mask_changed()
         original = window.current_image.copy()
         window.inpaint_single()
+        if window._inpaint_worker:
+            window._inpaint_worker.wait()
         assert not np.array_equal(window.current_image, original)
 
     def test_undo_restores_image(self, window):
@@ -87,6 +89,8 @@ class TestSingleInpaint:
         window.on_mask_changed()
         original = window.current_image.copy()
         window.inpaint_single()
+        if window._inpaint_worker:
+            window._inpaint_worker.wait()
         window.undo_single()
         assert np.array_equal(window.current_image, original)
 

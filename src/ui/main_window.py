@@ -278,10 +278,7 @@ class EliteWatermarkRemover(QMainWindow):
         group = QGroupBox("2. Advanced Selection Tools")
         layout = QVBoxLayout()
 
-        from PyQt5.QtWidgets import QGridLayout, QSizePolicy
-
-        tool_grid = QGridLayout()
-        tool_grid.setSpacing(5)
+        from PyQt5.QtWidgets import QSizePolicy
 
         self.btn_smart_obj = QToolButton()
         self.btn_smart_obj.setText("Smart Box")
@@ -339,17 +336,13 @@ class EliteWatermarkRemover(QMainWindow):
         self.btn_wand.clicked.connect(lambda: self._select_tool(ToolMode.MAGIC_WAND))
         self.btn_wand.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        # Row 0
-        tool_grid.addWidget(self.btn_smart_lasso, 0, 0)
-        tool_grid.addWidget(self.btn_smart_obj, 0, 1)
-        # Row 1
-        tool_grid.addWidget(self.btn_heal, 1, 0)
-        tool_grid.addWidget(self.btn_clone, 1, 1)
-        # Row 2
-        tool_grid.addWidget(self.btn_brush, 2, 0)
-        tool_grid.addWidget(self.btn_rect, 2, 1)
-        # Row 3
-        tool_grid.addWidget(self.btn_wand, 3, 0)
+        layout.addWidget(self.btn_smart_lasso)
+        layout.addWidget(self.btn_smart_obj)
+        layout.addWidget(self.btn_heal)
+        layout.addWidget(self.btn_clone)
+        layout.addWidget(self.btn_brush)
+        layout.addWidget(self.btn_rect)
+        layout.addWidget(self.btn_wand)
 
         self.tool_buttons = [
             self.btn_smart_obj,

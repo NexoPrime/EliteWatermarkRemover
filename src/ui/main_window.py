@@ -896,6 +896,14 @@ class EliteWatermarkRemover(QMainWindow):
             self._set_status("Inpainting already in progress...")
             return
 
+        if self.worker is not None and self.worker.isRunning():
+            QMessageBox.warning(
+                self,
+                "Notice",
+                "Cannot perform single inpaint while batch processing is running.",
+            )
+            return
+
         self.undo_stack.append(self.current_image.copy())
         settings = self.get_inpaint_settings()
 

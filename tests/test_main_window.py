@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import pytest
 from PyQt5.QtCore import QPointF
+from PyQt5.QtWidgets import QApplication
 
 from src.core.models import InpaintSettings
 from src.ui.components.image_viewer import ToolMode
@@ -80,7 +81,9 @@ class TestSingleInpaint:
         original = window.current_image.copy()
         window.inpaint_single()
         if window._inpaint_worker:
-            window._inpaint_worker.wait()
+            while window._inpaint_worker.isRunning():
+                QApplication.processEvents()
+            QApplication.processEvents()
         assert not np.array_equal(window.current_image, original)
 
     def test_undo_restores_image(self, window):
@@ -90,7 +93,9 @@ class TestSingleInpaint:
         original = window.current_image.copy()
         window.inpaint_single()
         if window._inpaint_worker:
-            window._inpaint_worker.wait()
+            while window._inpaint_worker.isRunning():
+                QApplication.processEvents()
+            QApplication.processEvents()
         window.undo_single()
         assert np.array_equal(window.current_image, original)
 

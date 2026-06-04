@@ -685,7 +685,11 @@ class EliteWatermarkRemover(QMainWindow):
         """Open a file dialog and load a reference image."""
         start_dir = self.config.last_open_dir or ""
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "Select Reference Image", start_dir, IMAGE_FILTER
+            self,
+            "Select Reference Image",
+            start_dir,
+            IMAGE_FILTER,
+            options=QFileDialog.DontUseNativeDialog,
         )
         if not file_path:
             return
@@ -720,7 +724,11 @@ class EliteWatermarkRemover(QMainWindow):
 
         start_dir = self.config.last_save_dir or ""
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Result", start_dir, SAVE_IMAGE_FILTER
+            self,
+            "Save Result",
+            start_dir,
+            SAVE_IMAGE_FILTER,
+            options=QFileDialog.DontUseNativeDialog,
         )
         if not file_path:
             return
@@ -756,7 +764,11 @@ class EliteWatermarkRemover(QMainWindow):
 
         if not file_path:
             file_path, _ = QFileDialog.getOpenFileName(
-                self, "Load Mask", "", MASK_FILTER
+                self,
+                "Load Mask",
+                "",
+                MASK_FILTER,
+                options=QFileDialog.DontUseNativeDialog,
             )
 
         if not file_path:
@@ -797,7 +809,11 @@ class EliteWatermarkRemover(QMainWindow):
             return
 
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Mask", "", SAVE_MASK_FILTER
+            self,
+            "Save Mask",
+            "",
+            SAVE_MASK_FILTER,
+            options=QFileDialog.DontUseNativeDialog,
         )
         if not file_path:
             return
@@ -1006,7 +1022,10 @@ class EliteWatermarkRemover(QMainWindow):
         """Open a dialog to select a folder for batch processing."""
         start_dir = self.config.last_batch_dir or ""
         folder = QFileDialog.getExistingDirectory(
-            self, "Select Folder with Images", start_dir
+            self,
+            "Select Folder with Images",
+            start_dir,
+            options=QFileDialog.DontUseNativeDialog,
         )
         if folder:
             self.batch_folder = folder

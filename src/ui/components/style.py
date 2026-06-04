@@ -257,6 +257,28 @@ QToolTip {
     font-weight: bold;
 }
 
+/* ===== Dialogs & File Explorers ===== */
+QDialog, QMessageBox {
+    background-color: #0b0d17;
+    color: #e0e6ed;
+}
+QTableView, QTreeView, QListView {
+    background-color: #0f111a;
+    color: #cbd5e1;
+    border: 1px solid #1e293b;
+    gridline-color: #1e293b;
+    selection-background-color: #3b82f6;
+    selection-color: #ffffff;
+}
+QHeaderView::section {
+    background-color: #151828;
+    color: #94a3b8;
+    border: none;
+    border-right: 1px solid #1e293b;
+    border-bottom: 1px solid #1e293b;
+    padding: 0.4em;
+}
+
 /* ===== Splitter ===== */
 QSplitter::handle {
     background-color: #1e293b;
